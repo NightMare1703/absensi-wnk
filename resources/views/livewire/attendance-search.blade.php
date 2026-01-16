@@ -290,9 +290,8 @@
         {{-- Attendances Table End --}}
     </div>
     {{-- Tables End --}}
-    @if ($attendances->hasPages())
-        <div class="mt-4">
-            {{ $attendances->links() }}
-        </div>
-    @endif
+    {{-- Pagination Links --}}
+    <div class="flex justify-center">
+        {{ $attendances->links() }}
+    </div>
 </div>

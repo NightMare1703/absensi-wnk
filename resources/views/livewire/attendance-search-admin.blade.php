@@ -320,5 +320,5 @@
     {{-- Pagination Links --}}
     <div class="flex justify-center">
         {{ $attendances->links() }}
-        </div>
+    </div>
 </div>
