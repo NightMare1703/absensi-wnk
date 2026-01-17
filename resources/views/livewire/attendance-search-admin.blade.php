@@ -51,7 +51,7 @@
 
             {{-- Filter By Name --}}
             <div class="mb-4">
-                <label for="name" class="block mb-2.5 text-sm font-medium text-heading">Filter Nama</label>
+                <label for="name" class="block mb-2.5 text-sm font-medium dark:text-white">Filter Nama</label>
                 <select wire:model.live="name" type="text" id="name"
                     class="block w-full xl:w-60 p-3 bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs" />
                 <option value="">-- Pilih Nama --</option>
@@ -64,12 +64,12 @@
 
             {{-- Filter By Date Between --}}
             <div class="mb-4">
-                <label for="date_from" class="block mb-2.5 text-sm font-medium text-heading">Dari Tanggal</label>
+                <label for="date_from" class="block mb-2.5 text-sm font-medium dark:text-white">Dari Tanggal</label>
                 <input wire:model.live="date_from" type="date" id="date_from"
                     class="block w-full xl:w-60 p-3 bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs" />
             </div>
             <div class="mb-4">
-                <label for="date_to" class="block mb-2.5 text-sm font-medium text-heading">Sampai Tanggal</label>
+                <label for="date_to" class="block mb-2.5 text-sm font-medium dark:text-white">Sampai Tanggal</label>
                 <input wire:model.live="date_to" type="date" id="date_to"
                     class="block w-full xl:w-60 p-3 bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs" />
             </div>
@@ -98,21 +98,68 @@
         {{-- Filter and Download End --}}
     </div>
 
-    {{-- Total Salary --}}
-    <div class="mb-4 p-4 bg-green-100 text-green-700 rounded-base">
-        @php
-            $totalSalary = 0;
-            if (isset($reports) && $date_from != '' && $date_to != '') {
-                foreach ($reports as $report) {
-                    $totalSalary += $report->hours * 10000;
-                }
-            } else {
-                $totalSalary = 0;
-            }
-        @endphp
-        Total Gaji : <strong>Rp {{ number_format($totalSalary, 0, ',', '.') }}</strong>
-    </div>
-    {{-- Total Salary End --}}
+    {{-- Statistics Cards Section --}}
+    @if ($date_from != '' && $date_to != '')
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            {{-- Total Salary Card --}}
+            <div class="bg-linear-to-br from-green-50 to-green-100 border border-green-200 rounded-lg shadow-md hover:shadow-lg transition-shadow overflow-hidden">
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-gray-700 font-semibold text-sm">Total Gaji</h3>
+                        <div class="p-3 bg-green-200 rounded-lg">
+                            <svg class="w-6 h-6 text-green-700" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                    </div>
+                    <p class="text-3xl font-bold text-green-700">Rp {{ number_format($totalSalary, 0, ',', '.') }}</p>
+                    <p class="text-green-600 text-xs mt-2">Berdasarkan filter yang dipilih</p>
+                </div>
+            </div>
+
+            {{-- Total Working Hours Card --}}
+            <div class="bg-linear-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg shadow-md hover:shadow-lg transition-shadow overflow-hidden">
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-gray-700 font-semibold text-sm">Total Jam Kerja</h3>
+                        <div class="p-3 bg-blue-200 rounded-lg">
+                            <svg class="w-6 h-6 text-blue-700" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                    </div>
+                    <p class="text-3xl font-bold text-blue-700">{{ $totalHours }} <span class="text-lg">jam</span></p>
+                    <p class="text-blue-600 text-xs mt-2">Total durasi kerja</p>
+                </div>
+            </div>
+
+            {{-- Late Attendance Card --}}
+            <div class="bg-linear-to-br from-red-50 to-red-100 border border-red-200 rounded-lg shadow-md hover:shadow-lg transition-shadow overflow-hidden">
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-gray-700 font-semibold text-sm">Keterlambatan</h3>
+                        <div class="p-3 bg-red-200 rounded-lg">
+                            <svg class="w-6 h-6 text-red-700" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                    </div>
+                    <p class="text-3xl font-bold text-red-700">{{ $lateCount }} <span class="text-lg">kali</span></p>
+                    <p class="text-red-600 text-xs mt-2">Jumlah keterlambatan</p>
+                </div>
+            </div>
+        </div>
+    @else
+        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+            <div class="flex items-center gap-3">
+                <svg class="w-5 h-5 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                </svg>
+                <p class="text-yellow-800 text-sm">Silakan pilih tanggal awal dan akhir untuk melihat statistik filter data</p>
+            </div>
+        </div>
+    @endif
+    {{-- Statistics Cards Section End --}}
 
     {{-- Message delete attendance --}}
     @if (session()->has('message'))
@@ -174,7 +221,7 @@
 
                                 {{-- MODAL UPDATE REPORT --}}
                                 <button
-                                    class="text-white bg-success box-border border border-transparent hover:bg-success-strong focus:ring-2 focus:ring-brand-medium shadow-xs font-medium leading-5 rounded-base text-sm px-2 py-2 focus:outline-none">
+                                    class="text-white bg-success box-border border border-transparent hover:bg-success-strong focus:ring-2 focus:ring-brand-medium shadow-xs font-medium leading-5 rounded-base text-sm px-2 py-2 focus:outline-none mr-1">
                                     <a href="{{ route('edit-job-report', ['jobReport' => $report->id]) }}">
                                         <svg class="w-4 h-4 text-white dark:text-white" aria-hidden="true"
                                             xmlns="http://www.w3.org/2000/svg" width="24" height="24"

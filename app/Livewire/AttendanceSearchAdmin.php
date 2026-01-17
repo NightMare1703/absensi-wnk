@@ -198,28 +198,21 @@ class AttendanceSearchAdmin extends Component
 
     public function render()
     {
+        // Query untuk pagination (data yang ditampilkan di tabel)
         $reportQuery = JobReport::query();
+        $query = Attendance::query();
 
         if ($this->name) {
             $reportQuery->whereHas('user', function ($q) {
                 $q->where('name', $this->name);
             });
-        }
-
-        if ($this->date_from && $this->date_to) {
-            $reportQuery->whereBetween('work_date', [$this->date_from, $this->date_to]);
-        }
-
-        // 
-        $query = Attendance::query();
-
-        if ($this->name) {
             $query->whereHas('user', function ($q) {
                 $q->where('name', $this->name);
             });
         }
 
         if ($this->date_from && $this->date_to) {
+            $reportQuery->whereBetween('work_date', [$this->date_from, $this->date_to]);
             $query->whereBetween('date', [$this->date_from, $this->date_to]);
         }
 
@@ -231,8 +224,41 @@ class AttendanceSearchAdmin extends Component
                 $q->where('name', $this->name);
             })->whereMonth('date', Carbon::now()->month)->whereYear('date', Carbon::now()->year);
         }
-            $reports = $reportQuery->orderBy('work_date')->paginate(31);
-            $attendances = $query->orderBy('date')->paginate(31);
+        
+        $reports = $reportQuery->orderBy('work_date')->paginate(31);
+        $attendances = $query->orderBy('date')->paginate(31);
+
+        // Query terpisah untuk menghitung statistik dari SEMUA data yang terfilter (bukan hanya halaman saat ini)
+        $statsReportQuery = JobReport::query();
+        $statsLateQuery = Attendance::query();
+
+        if ($this->name) {
+            $statsReportQuery->whereHas('user', function ($q) {
+                $q->where('name', $this->name);
+            });
+            $statsLateQuery->whereHas('user', function ($q) {
+                $q->where('name', $this->name);
+            });
+        }
+
+        if ($this->date_from && $this->date_to) {
+            $statsReportQuery->whereBetween('work_date', [$this->date_from, $this->date_to]);
+            $statsLateQuery->whereBetween('date', [$this->date_from, $this->date_to]);
+        }
+
+        if($this->date_from == '' && $this->date_to == '' || $this->name == ''){
+            $statsReportQuery->whereHas('user', function ($q) {
+                $q->where('name', $this->name);
+            })->whereMonth('work_date', Carbon::now()->month)->whereYear('work_date', Carbon::now()->year);
+            $statsLateQuery->whereHas('user', function ($q) {
+                $q->where('name', $this->name);
+            })->whereMonth('date', Carbon::now()->month)->whereYear('date', Carbon::now()->year);
+        }
+        
+        // Calculate statistics dari SEMUA data terfilter
+        $totalSalary = $statsReportQuery->sum('total_salary');
+        $totalHours = number_format($statsReportQuery->sum('hours'),0, ',', '.');
+        $lateCount = $statsLateQuery->where('status', 'Terlambat')->count();
 
         $users = User::orderBy('name', 'asc')->get();
         return view(
@@ -240,7 +266,10 @@ class AttendanceSearchAdmin extends Component
             [
                 'reports' => $reports,
                 'attendances' => $attendances,
-                'users' => $users
+                'users' => $users,
+                'totalSalary' => $totalSalary,
+                'totalHours' => $totalHours,
+                'lateCount' => $lateCount
             ]
         );
     }

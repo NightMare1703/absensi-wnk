@@ -122,7 +122,7 @@ class AttendanceSearch extends Component
 
     public function render()
     {
-
+        // Query untuk pagination (data yang ditampilkan di tabel)
         $reportQuery = JobReport::query();
         $query = Attendance::query();
         
@@ -139,11 +139,33 @@ class AttendanceSearch extends Component
         $reports = $reportQuery->where('user_id', Auth::id())->orderBy('work_date')->paginate(31);
         $attendances = $query->where('user_id', Auth::id())->orderBy('date')->paginate(31);
         
+        // Query terpisah untuk menghitung statistik dari SEMUA data yang terfilter (bukan hanya halaman saat ini)
+        $statsReportQuery = JobReport::query();
+        $statsLateQuery = Attendance::query();
+        
+        if($this->date_from == '' && $this->date_to == ''){
+            $statsReportQuery->where('user_id', Auth::id())->whereMonth('work_date', Carbon::now()->month)->whereYear('work_date', Carbon::now()->year);
+            $statsLateQuery->where('user_id', Auth::id())->whereMonth('date', Carbon::now()->month)->whereYear('date', Carbon::now()->year);
+        }
+
+        if ($this->date_from && $this->date_to) {
+            $statsReportQuery->where('user_id', Auth::id())->whereBetween('work_date', [$this->date_from, $this->date_to]);
+            $statsLateQuery->where('user_id', Auth::id())->whereBetween('date', [$this->date_from, $this->date_to]);
+        }
+        
+        // Calculate statistics dari SEMUA data terfilter
+        $totalSalary = $statsReportQuery->sum('total_salary');
+        $totalHours = number_format($statsReportQuery->sum('hours'),0, ',', '.');
+        $lateCount = $statsLateQuery->where('status', 'Terlambat')->count();
+        
         return view(
             'livewire.attendance-search',
             [
                 'reports' => $reports,
                 'attendances' => $attendances,
+                'totalSalary' => $totalSalary,
+                'totalHours' => $totalHours,
+                'lateCount' => $lateCount
             ]
         );
     }
