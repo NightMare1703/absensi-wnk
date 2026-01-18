@@ -60,13 +60,7 @@
                             <canvas id="canvas" class="rounded-xl object-cover" style="display:none;transform:scaleX(-1);"></canvas>
                         </div>
                         {{-- End Video Preview --}}
-
-                        <div class="mb-5">
-                            <img id="preview" alt="preview" class="hidden rounded-xl"
-                                style="transform:scaleX(-1); max-width: 100%; height: auto;" />
-                        </div>
-                    </div>
-
+                        
                     <div class="lg:block flex justify-center gap-4 mb-5">
                         <button
                             class="px-4 py-2 bg-gray-600 duration-300 text-white font-semibold rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-offset-gray-800"
@@ -77,6 +71,13 @@
                                 id="submit">Kirim Absensi</button>
                         </div>
                     </div>
+
+                        <div class="mb-5">
+                            <img id="preview" alt="preview" class="hidden rounded-xl"
+                                style="transform:scaleX(-1); max-width: 100%; height: auto;" />
+                        </div>
+                    </div>
+
 
                     <p class="text-md font-semibold text-green-600" id="status"></p>
                     {{-- </form> --}}
