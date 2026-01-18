@@ -102,10 +102,10 @@
                     video: {
                         facingMode: 'user',
                         width: {
-                            ideal: 1280
+                            ideal: 640
                         },
                         height: {
-                            ideal: 720
+                            ideal: 480
                         }
                     },
                     audio: false,
@@ -125,7 +125,7 @@
 
                 // Set ukuran tampilan video agar tidak gepeng
                 video.style.width = '300px';
-                video.style.height = 'auto';
+                video.style.height = '100';
             });
 
             // ambil foto
@@ -138,7 +138,7 @@
                 }
                 preview.src = dataUrl;
                 preview.style.width = '300px';
-                preview.style.height = 'auto';
+                preview.style.height = '100';
             });
 
             // kirim data absensi
