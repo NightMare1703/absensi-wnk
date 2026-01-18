@@ -1,5 +1,7 @@
 import './bootstrap';
 import 'flowbite';
+import './attendance';
+
 
 import Alpine from 'alpinejs';
 

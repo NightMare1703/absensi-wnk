@@ -75,5 +75,5 @@
             </div>
         </div>
     </div>
-    @vite(['resources/js/attendance.js'])
+    @vite(['resources/js/app.js'])
 </x-app-layout>
