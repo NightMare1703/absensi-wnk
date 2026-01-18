@@ -125,7 +125,7 @@
 
                 // Set ukuran tampilan video agar tidak gepeng
                 video.style.width = '300px';
-                video.style.height = '225px';
+                video.style.height = 'auto';
             });
 
             // ambil foto
@@ -138,7 +138,7 @@
                 }
                 preview.src = dataUrl;
                 preview.style.width = '300px';
-                preview.style.height = '225px';
+                preview.style.height = 'auto';
             });
 
             // kirim data absensi
