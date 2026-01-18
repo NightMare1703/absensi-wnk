@@ -51,18 +51,18 @@
                         </select>
                     </div>
                     {{-- End select location --}}
-                    <div class="photos xl:block flex flex-col items-center mb-5">
+                    <div class="photos xl:block flex flex-col items-center mb-5 w-full lg:w-96">
 
                         {{-- Video Preview --}}
-                        <div class="rounded-xl mb-5">
-                            <video class="rounded-xl h-50 w-auto" id="video" autoplay
+                        <div class="rounded-xl mb-5 w-full aspect-video bg-black">
+                            <video class="rounded-xl w-full h-full object-cover" id="video" autoplay
                                 style="transform:scaleX(-1);"></video>
-                            <canvas id="canvas" class="rounded-xl h-50 w-auto object-cover" style="display:none;transform:scaleX(-1);"></canvas>
+                            <canvas id="canvas" class="rounded-xl w-full h-full object-cover" style="display:none;transform:scaleX(-1);"></canvas>
                         </div>
                         {{-- End Video Preview --}}
 
                         {{-- <div class="mb-5"> --}}
-                            <img id="preview" alt="preview" class="hidden rounded-xl w-auto h-50 object-cover"
+                            <img id="preview" alt="preview" class="hidden rounded-xl w-full aspect-video object-cover"
                                 style="transform:scaleX(-1);" />
                         {{-- </div> --}}
                     </div>
