@@ -62,7 +62,7 @@
                         {{-- End Video Preview --}}
 
                         {{-- <div class="mb-5"> --}}
-                            <img id="preview" alt="preview" class="hidden rounded-xl w-full h-50 object-cover"
+                            <img id="preview" alt="preview" class="hidden rounded-xl w-auto h-50 object-cover"
                                 style="transform:scaleX(-1);" />
                         {{-- </div> --}}
                     </div>
