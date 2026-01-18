@@ -54,15 +54,15 @@
                     <div class="photos xl:block flex flex-col items-center mb-5">
 
                         {{-- Video Preview --}}
-                        <div class="video rounded-xl mb-5">
-                            <video class="rounded-xl w-[364px] h-[273px]" id="video" autoplay
+                        <div class="rounded-xl mb-5">
+                            <video class="rounded-xl h-50 w-auto" id="video" autoplay
                                 style="transform:scaleX(-1);"></video>
-                            <canvas id="canvas" class="w-[364px] h-[273px] object-cover" style="display:none;transform:scaleX(-1);"></canvas>
+                            <canvas id="canvas" class="rounded-xl h-50 w-auto object-cover" style="display:none;transform:scaleX(-1);"></canvas>
                         </div>
                         {{-- End Video Preview --}}
 
                         {{-- <div class="mb-5"> --}}
-                            <img id="preview" alt="preview" class="hidden rounded-xl w-[364px] h-[250px]"
+                            <img id="preview" alt="preview" class="hidden rounded-xl w-2xs h-50 object-cover"
                                 style="transform:scaleX(-1);" />
                         {{-- </div> --}}
                     </div>
