@@ -48,18 +48,20 @@
                         </select>
                     </div>
                     {{-- End select location --}}
+                    <div class="photos xl:block flex flex-col items-center">
 
-                    {{-- Video Preview --}}
-                    <div class="video rounded-xl">
-                        <video class="rounded-xl" id="video" width="320" height="240" autoplay
-                        style="transform:scaleX(-1);"></video>
-                        <canvas id="canvas" width="320" height="240" style="display:none;"></canvas>
-                    </div>
-                    {{-- End Video Preview --}}
-
-                    <div class="mb-5">
-                        <img id="preview" alt="preview" class="hidden rounded-xl" width="320px"
-                            style="margin-top:10px;max-width:320px;transform:scaleX(-1);" />
+                        {{-- Video Preview --}}
+                        <div class="video rounded-xl mb-5">
+                            <video class="rounded-xl  w-[320px] h-60" id="video" autoplay
+                            style="transform:scaleX(-1);"></video>
+                            <canvas id="canvas" width="320" height="240" style="display:none;"></canvas>
+                        </div>
+                        {{-- End Video Preview --}}
+    
+                        <div class="mb-5">
+                            <img id="preview" alt="preview" class="hidden rounded-xl w-[320px] h-60" style="transform:scaleX(-1);"
+                                />
+                        </div>
                     </div>
 
                     <div class="lg:block flex justify-center gap-4 mb-5">
