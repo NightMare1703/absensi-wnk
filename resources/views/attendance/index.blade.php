@@ -54,17 +54,17 @@
                     <div class="photos xl:block flex flex-col items-center mb-5 w-full lg:w-96">
 
                         {{-- Video Preview --}}
-                        <div class="rounded-xl mb-5 w-full aspect-video bg-black">
-                            <video class="rounded-xl w-full h-full object-cover" id="video" autoplay
-                                style="transform:scaleX(-1);"></video>
-                            <canvas id="canvas" class="rounded-xl w-full h-full object-cover" style="display:none;transform:scaleX(-1);"></canvas>
+                        <div class="rounded-xl mb-5 bg-black">
+                            <video class="rounded-xl object-cover" id="video" autoplay
+                                style="transform:scaleX(-1); max-width: 100%; height: auto; display: block;"></video>
+                            <canvas id="canvas" class="rounded-xl object-cover" style="display:none;transform:scaleX(-1);"></canvas>
                         </div>
                         {{-- End Video Preview --}}
 
-                    </div>
-                    <div class="mb-5">
-                        <img id="preview" alt="preview" class="hidden rounded-xl w-full h-60"
-                            style="transform:scaleX(-1);" />
+                        <div class="mb-5">
+                            <img id="preview" alt="preview" class="hidden rounded-xl"
+                                style="transform:scaleX(-1); max-width: 100%; height: auto;" />
+                        </div>
                     </div>
 
                     <div class="lg:block flex justify-center gap-4 mb-5">
@@ -97,7 +97,11 @@
             // minta permission camera
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({
-                    video: true,
+                    video: {
+                        facingMode: 'user',
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    },
                     audio: false,
                 });
                 video.srcObject = stream;
@@ -106,6 +110,17 @@
                 console.error(err);
                 return;
             }
+
+            // Tunggu video siap dan atur canvas sesuai dimensi video
+            video.addEventListener('loadedmetadata', () => {
+                // Set canvas ke dimensi video yang sebenarnya
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                
+                // Set ukuran tampilan video agar tidak gepeng
+                video.style.width = '300px';
+                video.style.height = 'auto';
+            });
 
             // ambil foto
             captureBtn.addEventListener("click", () => {
@@ -116,6 +131,8 @@
                     preview.classList.replace('hidden', 'block')
                 }
                 preview.src = dataUrl;
+                preview.style.width = '300px';
+                preview.style.height = 'auto';
             });
 
             // kirim data absensi

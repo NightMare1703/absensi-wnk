@@ -315,7 +315,7 @@
                                         </svg>
                                     </button>
                                 </td>
-                                <td class="px-3 py-2 font-medium text-center">
+                                <td class="px-1 py-1 font-medium text-center">
                                     @if ($attendance->picture_check_in)
                                         <img style="transform:scaleX(-1);"
                                             src="{{ asset('storage/' . $attendance->picture_check_in) }}"
