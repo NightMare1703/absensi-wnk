@@ -61,10 +61,10 @@
                         </div>
                         {{-- End Video Preview --}}
 
-                        {{-- <div class="mb-5"> --}}
+                        <div class="">
                             <img id="preview" alt="preview" class="hidden rounded-xl w-full h-60 object-cover"
                                 style="transform:scaleX(-1);" />
-                        {{-- </div> --}}
+                        </div>
                     </div>
 
                     <div class="lg:block flex justify-center gap-4 mb-5">
