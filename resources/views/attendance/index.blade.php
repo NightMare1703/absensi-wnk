@@ -54,7 +54,7 @@
                     <div class="photos xl:block flex flex-col items-center mb-5 w-full lg:w-96">
 
                         {{-- Video Preview --}}
-                        <div class="rounded-xl mb-5 bg-black overflow-hidden" style="width: 300px; height: auto; margin: 0 auto;">
+                        <div class="rounded-xl mb-5 bg-black overflow-hidden" style="width: 300px; height: auto;">
                             <video class="rounded-xl object-cover" id="video" autoplay playsinline muted
                                 style="width: 100%; height: auto; display: block; -webkit-transform: scaleX(-1); transform: scaleX(-1);"></video>
                             <canvas id="canvas" class="rounded-xl object-cover"
