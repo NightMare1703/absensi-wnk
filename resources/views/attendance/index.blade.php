@@ -54,11 +54,11 @@
                     <div class="photos xl:block flex flex-col items-center mb-5 w-full lg:w-96">
 
                         {{-- Video Preview --}}
-                        <div class="rounded-xl mb-5 bg-black">
-                            <video class="rounded-xl object-cover" id="video" autoplay
-                                style="transform:scaleX(-1); max-width: 100%; height: auto; display: block;"></video>
+                        <div class="rounded-xl mb-5 bg-black overflow-hidden" style="width: 300px; height: auto; margin: 0 auto;">
+                            <video class="rounded-xl object-cover" id="video" autoplay playsinline muted
+                                style="width: 100%; height: auto; display: block; -webkit-transform: scaleX(-1); transform: scaleX(-1);"></video>
                             <canvas id="canvas" class="rounded-xl object-cover"
-                                style="display:none;transform:scaleX(-1);"></canvas>
+                                style="display:none; -webkit-transform: scaleX(-1); transform: scaleX(-1);"></canvas>
                         </div>
                         {{-- End Video Preview --}}
 
@@ -98,19 +98,22 @@
 
             // minta permission camera
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({
+                const constraints = {
                     video: {
                         facingMode: 'user',
-                        width: {
-                            ideal: 640
-                        },
-                        height: {
-                            ideal: 480
-                        }
+                        width: { ideal: 640 },
+                        height: { ideal: 480 }
                     },
-                    audio: false,
-                });
+                    audio: false
+                };
+                
+                const stream = await navigator.mediaDevices.getUserMedia(constraints);
                 video.srcObject = stream;
+                
+                // Fallback untuk browser lama
+                if (video.mozSrcObject !== undefined) {
+                    video.mozSrcObject = stream;
+                }
             } catch (err) {
                 status.textContent = "Tidak dapat mengakses kamera: " + err.message;
                 console.error(err);
@@ -122,19 +125,32 @@
                 // Set canvas ke dimensi video yang sebenarnya
                 canvas.width = video.videoWidth;
                 canvas.height = video.videoHeight;
-
-                // Set ukuran tampilan video agar tidak gepeng
-                video.style.width = '300px';
-                video.style.height = 'auto';
+                
+                console.log(`Video loaded: ${canvas.width}x${canvas.height}`);
             });
+            
+            // Fallback jika loadedmetadata tidak di-trigger (terjadi di beberapa iOS)
+            setTimeout(() => {
+                if (video.videoWidth === 0) {
+                    canvas.width = 640;
+                    canvas.height = 480;
+                    console.log("Using fallback dimensions");
+                }
+            }, 2000);
 
             // ambil foto
             captureBtn.addEventListener("click", () => {
+                if (canvas.width === 0 || canvas.height === 0) {
+                    alert("Video belum siap, coba lagi");
+                    return;
+                }
+                
                 const ctx = canvas.getContext("2d");
                 ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
                 const dataUrl = canvas.toDataURL("image/png");
-                if (!preview.classList.contains('block')) {
-                    preview.classList.replace('hidden', 'block')
+                
+                if (preview.classList.contains('hidden')) {
+                    preview.classList.replace('hidden', 'block');
                 }
                 preview.src = dataUrl;
                 preview.style.width = '300px';
