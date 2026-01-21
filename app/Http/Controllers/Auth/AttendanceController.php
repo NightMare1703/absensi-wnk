@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Auth;
 
 use Carbon\Carbon;
 use App\Models\Attendance;
+use App\Services\ImageCompressionService;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\StoreAttendanceRequest;
 use App\Http\Requests\UpdateAttendanceRequest;
@@ -75,11 +77,57 @@ class AttendanceController extends Auth
             $status = $now->gt($shiftStartTime) ? 'Terlambat' : 'Tidak Terlambat';
         }
         
-        // Store photo
-        $fileName = 'absensi' . '/' . $name . '_' . $now->timestamp . '.' . $extension;
-        Storage::disk('public')->put($fileName, $photoBase64);
-
-        $photoPath =  $fileName;
+        // ===== COMPRESS IMAGE SEBELUM DISIMPAN =====
+        // Check apakah compression enabled
+        if (!config('image-compression.enabled', true)) {
+            // Jika disabled, simpan tanpa kompresi
+            $fileName = 'absensi' . '/' . $name . '_' . $now->timestamp . '.' . $extension;
+            Storage::disk('public')->put($fileName, $photoBase64);
+            $photoPath = $fileName;
+        } else {
+            // Kompresi gambar
+            $compressionService = new ImageCompressionService();
+            
+            // Info gambar sebelum kompresi
+            $originalInfo = $compressionService->getImageInfo($photoBase64);
+            
+            // Kompresi gambar dengan setting dari config
+            $quality = config('image-compression.quality', 75);
+            $maxWidth = config('image-compression.max_width', 1280);
+            $maxHeight = config('image-compression.max_height', 720);
+            $format = config('image-compression.format', 'webp');
+            
+            $compressedImageData = $compressionService->compressImage(
+                $photoBase64,
+                quality: $quality,
+                maxWidth: $maxWidth,
+                maxHeight: $maxHeight
+            );
+            
+            // Info gambar setelah kompresi
+            $compressedInfo = $compressionService->getImageInfo($compressedImageData);
+            
+            // Bandingkan ukuran
+            $sizeComparison = $compressionService->compareSize($photoBase64, $compressedImageData);
+            
+            // Log hasil kompresi untuk monitoring
+            if (config('image-compression.logging', true)) {
+                Log::info('Image Compression Result', [
+                    'user_id' => $nameId,
+                    'user_name' => $name,
+                    'timestamp' => $now->toDateTimeString(),
+                    'original_size_kb' => $originalInfo['size_kb'] ?? 0,
+                    'compressed_size_kb' => $compressedInfo['size_kb'] ?? 0,
+                    'reduction_percentage' => $sizeComparison['reduction_percentage'] ?? 0,
+                    'quality' => $quality,
+                ]);
+            }
+            
+            // Store photo dengan format WebP
+            $fileName = 'absensi' . '/' . $name . '_' . $now->timestamp . '.' . $format;
+            Storage::disk('public')->put($fileName, $compressedImageData);
+            $photoPath = $fileName;
+        }
 
         // Create attendance record
         Attendance::create([
@@ -94,8 +142,14 @@ class AttendanceController extends Auth
 
         return response()->json([
             'message' => 'Absensi Berhasil Tercatat',
-            'redirect' => '/dashboard'
-        ], 201,);
+            'redirect' => '/dashboard',
+            // Optional: tambahkan info kompresi untuk debugging
+            'compression_info' => [
+                'original_kb' => round($sizeComparison['original_kb'], 2),
+                'compressed_kb' => round($sizeComparison['compressed_kb'], 2),
+                'reduction_percentage' => $sizeComparison['reduction_percentage'],
+            ]
+        ], 201);
         
     }
 
