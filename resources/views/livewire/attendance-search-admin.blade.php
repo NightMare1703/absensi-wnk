@@ -53,7 +53,7 @@
             <div class="mb-4">
                 <label for="name" class="block mb-2.5 text-sm font-medium dark:text-white">Filter Nama</label>
                 <select wire:model.live="name" type="text" id="name"
-                    class="block w-full xl:w-60 p-3 bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs" />
+                    class="block w-full xl:w-60 p-3 bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:focus:border-indigo-600 dark:focus:ring-indigo-600" />
                 <option value="">-- Pilih Nama --</option>
                 @foreach ($users as $user)
                     <option value="{{ $user->name }}">{{ $user->name }}</option>
@@ -66,12 +66,12 @@
             <div class="mb-4">
                 <label for="date_from" class="block mb-2.5 text-sm font-medium dark:text-white">Dari Tanggal</label>
                 <input wire:model.live="date_from" type="date" id="date_from"
-                    class="block w-full xl:w-60 p-3 bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs" />
+                    class="block w-full xl:w-60 p-3 bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:focus:border-indigo-600 dark:focus:ring-indigo-600" />
             </div>
             <div class="mb-4">
                 <label for="date_to" class="block mb-2.5 text-sm font-medium dark:text-white">Sampai Tanggal</label>
                 <input wire:model.live="date_to" type="date" id="date_to"
-                    class="block w-full xl:w-60 p-3 bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs" />
+                    class="block w-full xl:w-60 p-3 bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:focus:border-indigo-600 dark:focus:ring-indigo-600" />
             </div>
             {{-- Filter By Date Between End --}}
 
@@ -301,7 +301,7 @@
                 </thead>
                 <tbody>
                     @forelse ($attendances as $attendance)
-                        <tr class="bg-neutral-primary-soft border-b border-default hover:bg-gray-200">
+                        <tr wire:key="attendance-{{ $attendance->id }}" class="bg-neutral-primary-soft border-b border-default hover:bg-gray-200">
                             <td scope="row" class="px-3 py-2 font-medium text-heading whitespace-nowrap">
                                 {{ $loop->iteration }}
                             </td>
@@ -328,6 +328,20 @@
                                 {{ $attendance->status }}
                             </td>
                             <td class="px-3 py-2 font-medium text-heading whitespace-nowrap">
+                                {{-- MODAL UPDATE REPORT --}}
+                                <button
+                                    class="text-white bg-success box-border border border-transparent hover:bg-success-strong focus:ring-2 focus:ring-brand-medium shadow-xs font-medium leading-5 rounded-base text-sm px-2 py-2 focus:outline-none mr-1">
+                                    <a href="{{ route('edit-attendance', ['attendance' => $attendance->id]) }}">
+                                        <svg class="w-4 h-4 text-white dark:text-white" aria-hidden="true"
+                                            xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                            fill="none" viewBox="0 0 24 24">
+                                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="m14.304 4.844 2.852 2.852M7 7H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-4.5m2.409-9.91a2.017 2.017 0 0 1 0 2.853l-6.844 6.844L8 14l.713-3.565 6.844-6.844a2.015 2.015 0 0 1 2.852 0Z" />
+                                        </svg>
+                                    </a>
+                                </button>
+                                {{-- MODAL UPDATE REPORT --}}
                                 <button wire:click="confirmDeleteAttendance({{ $attendance->id }})"
                                     class="text-white bg-danger box-border border border-transparent hover:bg-danger-strong focus:ring-4 focus:ring-brand-medium shadow-xs font-medium leading-5 rounded-base text-sm px-2 py-2 focus:outline-none"
                                     type="button">

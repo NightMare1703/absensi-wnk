@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use Carbon\Carbon;
 use App\Models\Attendance;
 use App\Services\ImageCompressionService;
+use App\Services\AttendanceStatusService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -14,7 +15,7 @@ use App\Http\Controllers\Controller;
 use App\Models\WorkLocation;
 use App\Models\WorkShift;
 
-class AttendanceController extends Auth
+class AttendanceController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -69,15 +70,17 @@ class AttendanceController extends Auth
         $time = $now->toTimeString();
 
         // Cek Keterlambatan
-        $workShift = WorkShift::find($shift_id);
-        if($workShift->late == ''){
-            $status = 'Tidak Terlambat';
-        }else{
-            $shiftStartTime = Carbon::createFromFormat('H:i:s', $workShift->late, 'Asia/Jakarta');
-            $status = $now->gt($shiftStartTime) ? 'Terlambat' : 'Tidak Terlambat';
-        }
+        $statusService = new AttendanceStatusService();
+        $status = $statusService->determineStatus($shift_id);
         
         // ===== COMPRESS IMAGE SEBELUM DISIMPAN =====
+        // Initialize compression info variable
+        $compressionInfo = [
+            'original_kb' => 0,
+            'compressed_kb' => 0,
+            'reduction_percentage' => 0,
+        ];
+        
         // Check apakah compression enabled
         if (!config('image-compression.enabled', true)) {
             // Jika disabled, simpan tanpa kompresi
@@ -110,6 +113,13 @@ class AttendanceController extends Auth
             // Bandingkan ukuran
             $sizeComparison = $compressionService->compareSize($photoBase64, $compressedImageData);
             
+            // Update compression info
+            $compressionInfo = [
+                'original_kb' => round($sizeComparison['original_kb'] ?? 0, 2),
+                'compressed_kb' => round($sizeComparison['compressed_kb'] ?? 0, 2),
+                'reduction_percentage' => $sizeComparison['reduction_percentage'] ?? 0,
+            ];
+            
             // Log hasil kompresi untuk monitoring
             if (config('image-compression.logging', true)) {
                 Log::info('Image Compression Result', [
@@ -130,7 +140,7 @@ class AttendanceController extends Auth
         }
 
         // Create attendance record
-        Attendance::create([
+        $attendance = Attendance::create([
             'user_id' => $nameId,
             'date' => $date,
             'shift_id' => $shift_id,
@@ -140,15 +150,18 @@ class AttendanceController extends Auth
             'status' => $status,
         ]);
 
+        // Log attendance creation
+        Log::info('Attendance created', [
+            'user_id' => $nameId,
+            'attendance_id' => $attendance->id,
+            'date' => $date,
+            'status' => $status,
+        ]);
+
         return response()->json([
             'message' => 'Absensi Berhasil Tercatat',
             'redirect' => '/dashboard',
-            // Optional: tambahkan info kompresi untuk debugging
-            'compression_info' => [
-                'original_kb' => round($sizeComparison['original_kb'], 2),
-                'compressed_kb' => round($sizeComparison['compressed_kb'], 2),
-                'reduction_percentage' => $sizeComparison['reduction_percentage'],
-            ]
+            'compression_info' => $compressionInfo
         ], 201);
         
     }
@@ -166,7 +179,13 @@ class AttendanceController extends Auth
      */
     public function edit(Attendance $attendance)
     {
-        //
+        // Authorization using policy
+        $this->authorize('update', $attendance);
+
+        $locations = WorkLocation::orderBy('location', 'asc')->get();
+        $shifts = WorkShift::orderBy('shift', 'asc')->get();
+
+        return view('edit-attendance', compact('attendance', 'locations', 'shifts'));
     }
 
     /**
@@ -174,7 +193,59 @@ class AttendanceController extends Auth
      */
     public function update(UpdateAttendanceRequest $request, Attendance $attendance)
     {
-        //
+        // Authorization using policy
+        $this->authorize('update', $attendance);
+
+        try {
+            // Validate shift exists and get it
+            $workShift = WorkShift::findOrFail($request->input('shift'));
+            
+            // Calculate attendance status based on original check-in time
+            $statusService = new AttendanceStatusService();
+            $checkInTime = $attendance->check_in ? 
+                Carbon::createFromFormat('H:i:s', $attendance->check_in, 'Asia/Jakarta') : 
+                Carbon::now('Asia/Jakarta');
+            
+            $status = $statusService->determineStatus($workShift->id, $checkInTime);
+
+            // Update attendance record
+            $attendance->update([
+                'shift_id' => $request->input('shift'),
+                'location_id' => $request->input('location'),
+                'status' => $status,
+            ]);
+
+            Log::info('Attendance updated', [
+                'user_id' => Auth::user()->id,
+                'attendance_id' => $attendance->id,
+                'new_shift' => $workShift->id,
+                'new_status' => $status,
+            ]);
+            
+            return redirect()->route('dashboard')->with('success', 'Data absensi berhasil diperbarui.');
+            
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            Log::warning('Attendance update - Invalid shift', [
+                'user_id' => Auth::user()->id,
+                'shift_id' => $request->input('shift'),
+            ]);
+            return back()->withErrors(['shift' => 'Shift yang dipilih tidak valid.']);
+            
+        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
+            Log::warning('Attendance update - Unauthorized', [
+                'user_id' => Auth::user()->id,
+                'attendance_id' => $attendance->id,
+            ]);
+            abort(403, 'Anda tidak berhak memperbarui data absensi ini.');
+            
+        } catch (\Exception $e) {
+            Log::error('Attendance update failed', [
+                'user_id' => Auth::user()->id,
+                'attendance_id' => $attendance->id,
+                'error' => $e->getMessage(),
+            ]);
+            return back()->with('error', 'Terjadi kesalahan saat memperbarui data absensi.');
+        }
     }
 
     /**

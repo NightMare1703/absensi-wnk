@@ -18,7 +18,7 @@
                             <label for="date"
                                 class="block text-sm font-medium text-gray-700 dark:text-gray-300">Tanggal</label>
                             <input type="date" name="date" id="date" required
-                                class="text-gray-800 mt-1 block w-full lg:w-100 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                class="text-gray-800 mt-1 block w-full lg:w-100 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:focus:border-indigo-600 dark:focus:ring-indigo-600">
                         </div>
 
                         <div class="mb-4">
@@ -26,7 +26,7 @@
                                 class="block text-sm font-medium text-gray-700 dark:text-gray-300">Jumlah
                                 Jam</label>
                             <input type="number" name="hours" id="hours" required
-                                class="text-gray-800 mt-1 block w-full lg:w-100 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                class="text-gray-800 mt-1 block w-full lg:w-100 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:focus:border-indigo-600 dark:focus:ring-indigo-600">
                         </div>
 
                         <div class="mb-4">
@@ -34,7 +34,7 @@
                                 class="block text-sm font-medium text-gray-700 dark:text-gray-300">Deskripsi
                                 Pekerjaan</label>
                             <textarea name="description" id="description" rows="4"
-                                class="text-gray-800 mt-1 block w-full lg:w-100 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></textarea>
+                                class="text-gray-800 mt-1 block w-full lg:w-100 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:focus:border-indigo-600 dark:focus:ring-indigo-600"></textarea>
                         </div>
 
                         <div>

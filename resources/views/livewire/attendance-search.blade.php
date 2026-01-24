@@ -44,14 +44,14 @@
 
             {{-- Filter By Date Between --}}
             <div class="mb-4">
-                <label for="date_from" class="block mb-2.5 text-sm font-medium dark:text-white">Dari Tanggal</label>
+                <label for="date_from" class="block mb-2.5 text-sm font-medium dark:text-white ">Dari Tanggal</label>
                 <input wire:model.live="date_from" type="date" id="date_from"
-                    class="block w-full xl:w-60 p-3 bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs" />
+                    class="block w-full xl:w-60 p-3 bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:focus:border-indigo-600 dark:focus:ring-indigo-600" />
             </div>
             <div class="mb-4">
                 <label for="date_to" class="block mb-2.5 text-sm font-medium dark:text-white">Sampai Tanggal</label>
                 <input wire:model.live="date_to" type="date" id="date_to"
-                    class="block w-full xl:w-60 p-3 bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs" />
+                    class="block w-full xl:w-60 p-3 bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:focus:border-indigo-600 dark:focus:ring-indigo-600" />
             </div>
             {{-- Filter By Date Between End --}}
 

@@ -16,6 +16,8 @@ Route::middleware(['auth', 'verified'])->group(function(){
     // send attendance data
     Route::get('/attendance', [AttendanceController::class, 'index'])->name('attendance');
     Route::post('/attendance', [AttendanceController::class, 'store']);
+    Route::get('/attendance/edit/{attendance}', [AttendanceController::class, 'edit'])->name('edit-attendance');
+    Route::put('/attendance/{attendance}', [AttendanceController::class, 'update'])->name('update-attendance');
 
     // job report route
     Route::get('/report', [JobReportController::class, 'index'])->name('job-report');

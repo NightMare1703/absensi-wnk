@@ -13,7 +13,8 @@ class AttendancePolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        // Admin dapat melihat semua, user hanya miliknya
+        return $user->role === 'admin' || $user->role === 'super_admin';
     }
 
     /**
@@ -21,7 +22,8 @@ class AttendancePolicy
      */
     public function view(User $user, Attendance $attendance): bool
     {
-        return false;
+        // User dapat melihat kehadiran miliknya, admin dapat melihat semua
+        return $user->id === $attendance->user_id || $user->role === 'admin' || $user->role === 'super_admin';
     }
 
     /**
@@ -29,7 +31,8 @@ class AttendancePolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        // Semua user authenticated dapat membuat attendance record
+        return true;
     }
 
     /**
@@ -37,7 +40,9 @@ class AttendancePolicy
      */
     public function update(User $user, Attendance $attendance): bool
     {
-        return false;
+        // User hanya dapat update kehadiran miliknya sendiri
+        // Admin dapat update kehadiran user lain
+        return $user->id === $attendance->user_id || $user->role === 'admin' || $user->role === 'super_admin';
     }
 
     /**
@@ -45,7 +50,8 @@ class AttendancePolicy
      */
     public function delete(User $user, Attendance $attendance): bool
     {
-        return false;
+        // Hanya admin/super admin yang dapat menghapus
+        return $user->role === 'admin' || $user->role === 'super_admin';
     }
 
     /**
@@ -53,7 +59,8 @@ class AttendancePolicy
      */
     public function restore(User $user, Attendance $attendance): bool
     {
-        return false;
+        // Hanya admin/super admin
+        return $user->role === 'admin' || $user->role === 'super_admin';
     }
 
     /**
@@ -61,6 +68,7 @@ class AttendancePolicy
      */
     public function forceDelete(User $user, Attendance $attendance): bool
     {
-        return false;
+        // Hanya super admin
+        return $user->role === 'super_admin';
     }
 }

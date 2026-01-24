@@ -11,7 +11,8 @@ class UpdateAttendanceRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        // Authorization is handled in the controller using policies
+        return true;
     }
 
     /**
@@ -22,7 +23,21 @@ class UpdateAttendanceRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'shift' => 'required|exists:work_shifts,id',
+            'location' => 'required|exists:work_locations,id',
+        ];
+    }
+
+    /**
+     * Get custom error messages.
+     */
+    public function messages(): array
+    {
+        return [
+            'shift.required' => 'Shift tidak boleh kosong',
+            'shift.exists' => 'Shift yang dipilih tidak valid',
+            'location.required' => 'Lokasi tidak boleh kosong',
+            'location.exists' => 'Lokasi yang dipilih tidak valid',
         ];
     }
 }
