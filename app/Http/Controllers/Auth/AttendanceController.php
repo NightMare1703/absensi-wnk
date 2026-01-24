@@ -180,7 +180,17 @@ class AttendanceController extends Controller
     public function edit(Attendance $attendance)
     {
         // Authorization using policy
-        $this->authorize('update', $attendance);
+        try {
+            $this->authorize('update', $attendance);
+        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
+            Log::warning('Attendance edit - Unauthorized access attempt', [
+                'user_id' => Auth::user()->id,
+                'user_role' => Auth::user()->role,
+                'attendance_id' => $attendance->id,
+                'attendance_owner' => $attendance->user_id,
+            ]);
+            abort(403, 'Anda tidak berhak mengubah kehadiran pengguna lain.');
+        }
 
         $locations = WorkLocation::orderBy('location', 'asc')->get();
         $shifts = WorkShift::orderBy('shift', 'asc')->get();
@@ -193,8 +203,18 @@ class AttendanceController extends Controller
      */
     public function update(UpdateAttendanceRequest $request, Attendance $attendance)
     {
-        // Authorization using policy
-        $this->authorize('update', $attendance);
+        // Authorization using policy - Strict check
+        try {
+            $this->authorize('update', $attendance);
+        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
+            Log::warning('Attendance update - Unauthorized access attempt', [
+                'user_id' => Auth::user()->id,
+                'user_role' => Auth::user()->role,
+                'attendance_id' => $attendance->id,
+                'attendance_owner' => $attendance->user_id,
+            ]);
+            abort(403, 'Anda tidak berhak mengubah kehadiran pengguna lain.');
+        }
 
         try {
             // Validate shift exists and get it
@@ -217,7 +237,9 @@ class AttendanceController extends Controller
 
             Log::info('Attendance updated', [
                 'user_id' => Auth::user()->id,
+                'user_role' => Auth::user()->role,
                 'attendance_id' => $attendance->id,
+                'attendance_owner' => $attendance->user_id,
                 'new_shift' => $workShift->id,
                 'new_status' => $status,
             ]);
@@ -230,13 +252,6 @@ class AttendanceController extends Controller
                 'shift_id' => $request->input('shift'),
             ]);
             return back()->withErrors(['shift' => 'Shift yang dipilih tidak valid.']);
-            
-        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
-            Log::warning('Attendance update - Unauthorized', [
-                'user_id' => Auth::user()->id,
-                'attendance_id' => $attendance->id,
-            ]);
-            abort(403, 'Anda tidak berhak memperbarui data absensi ini.');
             
         } catch (\Exception $e) {
             Log::error('Attendance update failed', [

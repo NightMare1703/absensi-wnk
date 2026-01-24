@@ -40,9 +40,13 @@ class AttendancePolicy
      */
     public function update(User $user, Attendance $attendance): bool
     {
-        // User hanya dapat update kehadiran miliknya sendiri
-        // Admin dapat update kehadiran user lain
-        return $user->id === $attendance->user_id || $user->role === 'admin' || $user->role === 'super_admin';
+        // User biasa hanya dapat update kehadiran miliknya sendiri
+        if ($user->role === 'user') {
+            return $user->id === $attendance->user_id;
+        }
+        
+        // Admin dapat update kehadiran siapa saja
+        return $user->role === 'admin' || $user->role === 'super_admin';
     }
 
     /**
