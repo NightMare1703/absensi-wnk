@@ -328,7 +328,7 @@
                                 {{ $attendance->status }}
                             </td>
                             <td class="px-3 py-2 font-medium text-heading whitespace-nowrap">
-                                {{-- MODAL UPDATE REPORT --}}
+                                {{-- MODAL UPDATE ATTENDANCE --}}
                                 <button
                                     class="text-white bg-success box-border border border-transparent hover:bg-success-strong focus:ring-2 focus:ring-brand-medium shadow-xs font-medium leading-5 rounded-base text-sm px-2 py-2 focus:outline-none mr-1">
                                     <a href="{{ route('edit-attendance', ['attendance' => $attendance->id]) }}">
@@ -341,7 +341,7 @@
                                         </svg>
                                     </a>
                                 </button>
-                                {{-- MODAL UPDATE REPORT --}}
+                                {{-- MODAL UPDATE ATTENDANCE --}}
                                 <button wire:click="confirmDeleteAttendance({{ $attendance->id }})"
                                     class="text-white bg-danger box-border border border-transparent hover:bg-danger-strong focus:ring-4 focus:ring-brand-medium shadow-xs font-medium leading-5 rounded-base text-sm px-2 py-2 focus:outline-none"
                                     type="button">
