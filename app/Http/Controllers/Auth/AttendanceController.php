@@ -179,23 +179,14 @@ class AttendanceController extends Controller
      */
     public function edit(Attendance $attendance)
     {
-        // Authorization using policy
-        try {
-            $this->authorize('update', $attendance);
-        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
-            Log::warning('Attendance edit - Unauthorized access attempt', [
-                'user_id' => Auth::user()->id,
-                'user_role' => Auth::user()->role,
-                'attendance_id' => $attendance->id,
-                'attendance_owner' => $attendance->user_id,
-            ]);
-            abort(403, 'Anda tidak berhak mengubah kehadiran pengguna lain.');
-        }
-
-        $locations = WorkLocation::orderBy('location', 'asc')->get();
-        $shifts = WorkShift::orderBy('shift', 'asc')->get();
-
-        return view('edit-attendance', compact('attendance', 'locations', 'shifts'));
+        // Authorization: Check if the user owns this attendance record
+        if ($attendance->user_id !== Auth::user()->id) {
+            abort(403, 'Unauthorized access to this attendance record.');
+    }
+    
+        $location = WorkLocation::orderBy('location', 'asc')->get();
+        $shift = WorkShift::orderBy('shift', 'asc')->get();
+        return view('edit-attendance', ['attendance' => $attendance, 'locations' => $location, 'shifts' =>$shift]);
     }
 
     /**
@@ -203,64 +194,23 @@ class AttendanceController extends Controller
      */
     public function update(UpdateAttendanceRequest $request, Attendance $attendance)
     {
-        // Authorization using policy - Strict check
-        try {
-            $this->authorize('update', $attendance);
-        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
-            Log::warning('Attendance update - Unauthorized access attempt', [
-                'user_id' => Auth::user()->id,
-                'user_role' => Auth::user()->role,
-                'attendance_id' => $attendance->id,
-                'attendance_owner' => $attendance->user_id,
-            ]);
-            abort(403, 'Anda tidak berhak mengubah kehadiran pengguna lain.');
+        // Authorization: Check if the user owns this attendance record
+        if ($attendance->user_id !== Auth::user()->id) {
+            abort(403, 'Unauthorized access to this attendance record.');
         }
 
-        try {
-            // Validate shift exists and get it
-            $workShift = WorkShift::findOrFail($request->input('shift'));
-            
-            // Calculate attendance status based on original check-in time
-            $statusService = new AttendanceStatusService();
-            $checkInTime = $attendance->check_in ? 
-                Carbon::createFromFormat('H:i:s', $attendance->check_in, 'Asia/Jakarta') : 
-                Carbon::now('Asia/Jakarta');
-            
-            $status = $statusService->determineStatus($workShift->id, $checkInTime);
+        // Cek keterlambatan berdasarkan shift baru
+        $shift_id = $request->input('shift');
+        $statusService = new AttendanceStatusService();
+        $status = $statusService->determineStatus($shift_id, Carbon::createFromFormat('H:i:s', $attendance->check_in, 'Asia/Jakarta'));
 
-            // Update attendance record
-            $attendance->update([
-                'shift_id' => $request->input('shift'),
-                'location_id' => $request->input('location'),
-                'status' => $status,
-            ]);
+        $attendance->update([
+            'shift_id' => $request->input('shift'),
+            'location_id' => $request->input('location'),
+            'status' => $status,
+        ]);
 
-            Log::info('Attendance updated', [
-                'user_id' => Auth::user()->id,
-                'user_role' => Auth::user()->role,
-                'attendance_id' => $attendance->id,
-                'attendance_owner' => $attendance->user_id,
-                'new_shift' => $workShift->id,
-                'new_status' => $status,
-            ]);
-            
-            return redirect()->route('dashboard')->with('success', 'Data absensi berhasil diperbarui.');
-            
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            Log::warning('Attendance update - Invalid shift', [
-                'user_id' => Auth::user()->id,
-                'shift_id' => $request->input('shift'),
-            ]);
-            return back()->withErrors(['shift' => 'Shift yang dipilih tidak valid.']);
-            
-        } catch (\Exception $e) {
-            Log::error('Attendance update failed', [
-                'user_id' => Auth::user()->id,
-                'attendance_id' => $attendance->id,
-                'error' => $e->getMessage(),
-            ]);
-            return back()->with('error', 'Terjadi kesalahan saat memperbarui data absensi.');
-        }
+        return redirect()->route('dashboard')->with('success', 'Attendance record updated successfully.');
     }
 
     /**

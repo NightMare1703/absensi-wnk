@@ -190,6 +190,7 @@
                                 <td class="px-3 py-2 font-medium text-heading whitespace-nowrap w-20">
 
                                     {{-- MODAL DELETE REPORT --}}
+                                    @if(auth()->user()->id === $report->user_id)
                                     <button
                                         class="text-white bg-success box-border border border-transparent hover:bg-success-strong focus:ring-2 focus:ring-brand-medium shadow-xs font-medium leading-5 rounded-base text-sm px-2 py-2 focus:outline-none mr-1">
                                         <a href="{{ route('edit-job-report', ['jobReport' => $report->id]) }}">
@@ -202,6 +203,7 @@
                                             </svg>
                                         </a>
                                     </button>
+                                    @endif
                                     {{-- MODAL DELETE REPORT --}}
 
                                     {{-- MODAL UPDATE REPORT --}}
@@ -302,21 +304,21 @@
                                         font-medium whitespace-nowrap">
                                     {{ $attendance->status }}
                                 </td>
-                                <td class="px-3 py-2 font-medium text-center">
+                                <td class="px-3 py-2 font-medium text-center whitespace-nowrap">
                                     {{-- MODAL UPDATE ATTENDANCE --}}
-                                <button
-                                    class="text-white bg-success box-border border border-transparent hover:bg-success-strong focus:ring-2 focus:ring-brand-medium shadow-xs font-medium leading-5 rounded-base text-sm px-2 py-2 focus:outline-none mr-1">
-                                    <a href="{{ route('edit-attendance', ['attendance' => $attendance->id]) }}">
-                                        <svg class="w-4 h-4 text-white dark:text-white" aria-hidden="true"
-                                            xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                            fill="none" viewBox="0 0 24 24">
-                                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                                stroke-width="2"
-                                                d="m14.304 4.844 2.852 2.852M7 7H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-4.5m2.409-9.91a2.017 2.017 0 0 1 0 2.853l-6.844 6.844L8 14l.713-3.565 6.844-6.844a2.015 2.015 0 0 1 2.852 0Z" />
-                                        </svg>
-                                    </a>
-                                </button>
-                                {{-- MODAL UPDATE ATTENDANCE --}}
+                                    <button
+                                        class="text-white bg-success box-border border border-transparent hover:bg-success-strong focus:ring-2 focus:ring-brand-medium shadow-xs font-medium leading-5 rounded-base text-sm px-2 py-2 focus:outline-none mr-1">
+                                        <a href="{{ route('edit-attendance', ['attendance' => $attendance->id]) }}">
+                                            <svg class="w-4 h-4 text-white dark:text-white" aria-hidden="true"
+                                                xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                fill="none" viewBox="0 0 24 24">
+                                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                                    stroke-width="2"
+                                                    d="m14.304 4.844 2.852 2.852M7 7H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-4.5m2.409-9.91a2.017 2.017 0 0 1 0 2.853l-6.844 6.844L8 14l.713-3.565 6.844-6.844a2.015 2.015 0 0 1 2.852 0Z" />
+                                            </svg>
+                                        </a>
+                                    </button>
+                                    {{-- MODAL UPDATE ATTENDANCE --}}
                                     <button wire:click="confirmDeleteAttendance({{ $attendance->id }})"
                                         class="text-white bg-danger box-border border border-transparent hover:bg-danger-strong focus:ring-4 focus:ring-brand-medium shadow-xs font-medium leading-5 rounded-base text-sm px-2 py-2 focus:outline-none"
                                         type="button">
