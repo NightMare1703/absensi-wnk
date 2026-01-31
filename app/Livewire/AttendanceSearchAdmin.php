@@ -9,6 +9,7 @@ use App\Models\JobReport;
 use App\Models\Attendance;
 use Livewire\WithPagination;
 use App\Exports\AttendanceExport;
+use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Storage;
 
@@ -19,6 +20,20 @@ class AttendanceSearchAdmin extends Component
     public $name = '';
     public $date_from = '';
     public $date_to = '';
+
+    // Edit role properties
+    public $showEditRoleModal = false;
+    public $editUserId = null;
+    public $editUserRole = '';
+
+    // Restrict roles to only two values as requested
+    protected $rules = [
+        'editUserRole' => 'required|in:admin,employee',
+    ];
+
+    protected $validationAttributes = [
+        'editUserRole' => 'role pengguna',
+    ];
 
     // Modal confirmation properties
     public $showDeleteConfirmation = false;
@@ -48,7 +63,21 @@ class AttendanceSearchAdmin extends Component
     {
         return Excel::download(
             new AttendanceExport($this->name, $this->date_from, $this->date_to),
-            $this->name . '-' . Carbon::parse($this->date_from)->format('d-m-Y') . '-' . Carbon::parse($this->date_to)->format('d-m-Y') . '.xlsx'
+            $this->name . '-' . ($this->date_from ? Carbon::parse($this->date_from)->format('d-m-Y') : 'all') . '-' . ($this->date_to ? Carbon::parse($this->date_to)->format('d-m-Y') : 'all') . '.xlsx'
+        );
+    }
+
+    /**
+     * Export only the users summary sheet (matching the UI table)
+     */
+    public function exportUsersSummary()
+    {
+        $from = $this->date_from ? Carbon::parse($this->date_from)->format('d-m-Y') : 'all';
+        $to = $this->date_to ? Carbon::parse($this->date_to)->format('d-m-Y') : 'all';
+
+        return Excel::download(
+            new \App\Exports\UsersSummarySheet($this->name, $this->date_from, $this->date_to),
+            'ringkasan-pengguna-' . $from . '-' . $to . '.xlsx'
         );
     }
 
@@ -138,6 +167,69 @@ class AttendanceSearchAdmin extends Component
             $this->deleteItemLabel = "$reportCount Laporan Kerja + $attendanceCount Data Absensi";
             $this->showDeleteConfirmation = true;
         }
+    }
+
+    /**
+     * Open edit-role modal for a user (admin only)
+     */
+    public function confirmEditRole($userId)
+    {
+        // allow admins to edit anyone, allow users to open modal for themselves only
+        abort_if(!(Auth::user()->role === 'admin' || Auth::id() === (int) $userId), 403);
+
+        $user = User::find($userId);
+        if (! $user) {
+            session()->flash('message', 'Pengguna tidak ditemukan.');
+            return;
+        }
+
+        $this->editUserId = $user->id;
+        $this->editUserRole = $user->role;
+        $this->showEditRoleModal = true;
+    }
+
+    public function cancelEditRole()
+    {
+        $this->showEditRoleModal = false;
+        $this->editUserId = null;
+        $this->editUserRole = '';
+        $this->resetValidation();
+    }
+
+    public function updateRole()
+    {
+        abort_if(Auth::user()->role !== 'admin', 403);
+
+        if (! $this->editUserId) {
+            session()->flash('message', 'Tidak ada pengguna yang dipilih.');
+            return;
+        }
+
+        $this->validate();
+
+        $user = User::find($this->editUserId);
+        if (! $user) {
+            session()->flash('message', 'Pengguna tidak ditemukan.');
+            $this->cancelEditRole();
+            return;
+        }
+
+        $oldRole = $user->role;
+        $user->role = $this->editUserRole;
+        $user->save();
+
+        // If the current user changed their own role, force re-login to refresh permissions
+        if ($user->id === Auth::id()) {
+            Auth::logout();
+            session()->invalidate();
+            session()->regenerateToken();
+
+            return redirect()->route('login')->with('message', 'Peran Anda telah diubah menjadi "' . $user->role . '" — silakan login ulang.');
+        }
+
+        session()->flash('message', "Peran pengguna {$user->name} berhasil diubah dari {$oldRole} menjadi {$user->role}.");
+        $this->cancelEditRole();
+        $this->resetPage();
     }
 
     public function bulkDeleteFilteredData()
@@ -260,13 +352,58 @@ class AttendanceSearchAdmin extends Component
         $totalHours = number_format($statsReportQuery->sum('hours'),0, ',', '.');
         $lateCount = $statsLateQuery->where('status', 'Terlambat')->count();
 
-        $users = User::orderBy('name', 'asc')->get();
+        // Prepare local copies to safely use inside query closures
+        $dateFrom = $this->date_from;
+        $dateTo = $this->date_to;
+
+        // Full user list for the dropdown (should NOT be limited by the current name filter)
+        $allUsers = User::orderBy('name', 'asc')->get();
+
+        // Per-user aggregates that respect the selected date range (or default to current month)
+        // keep this as `$users` because the view expects it for the summary table
+        $users = User::query()
+            ->when($this->name, fn($q) => $q->where('name', $this->name))
+            ->select('users.*')
+            ->withCount(['attendances as attendance_count' => function ($q) use ($dateFrom, $dateTo) {
+                if ($dateFrom && $dateTo) {
+                    $q->whereBetween('date', [$dateFrom, $dateTo]);
+                } else {
+                    $q->whereMonth('date', Carbon::now()->month)->whereYear('date', Carbon::now()->year);
+                }
+            }])
+            ->withSum(['jobReports as total_work_hours' => function ($q) use ($dateFrom, $dateTo) {
+                if ($dateFrom && $dateTo) {
+                    $q->whereBetween('work_date', [$dateFrom, $dateTo]);
+                } else {
+                    $q->whereMonth('work_date', Carbon::now()->month)->whereYear('work_date', Carbon::now()->year);
+                }
+            }], 'hours')
+            ->withCount(['attendances as total_late_minutes' => function ($q) use ($dateFrom, $dateTo) {
+                if ($dateFrom && $dateTo) {
+                    $q->whereBetween('date', [$dateFrom, $dateTo]);
+                } else {
+                    $q->whereMonth('date', Carbon::now()->month)->whereYear('date', Carbon::now()->year);
+                }
+
+                $q->where('status', 'Terlambat');
+            }])
+            ->withSum(['jobReports as salary' => function ($q) use ($dateFrom, $dateTo) {
+                if ($dateFrom && $dateTo) {
+                    $q->whereBetween('work_date', [$dateFrom, $dateTo]);
+                } else {
+                    $q->whereMonth('work_date', Carbon::now()->month)->whereYear('work_date', Carbon::now()->year);
+                }
+            }], 'total_salary')
+            ->orderBy('name', 'asc')
+            ->get();
+
         return view(
             'livewire.attendance-search-admin',
             [
                 'reports' => $reports,
                 'attendances' => $attendances,
                 'users' => $users,
+                'allUsers' => $allUsers,
                 'totalSalary' => $totalSalary,
                 'totalHours' => $totalHours,
                 'lateCount' => $lateCount

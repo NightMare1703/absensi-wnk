@@ -29,6 +29,8 @@ class AttendanceExport implements WithMultipleSheets, WithProperties
     public function sheets(): array
     {
         return [
+            // summary per-user sheet ( respects same filters )
+            new UsersSummarySheet($this->name, $this->date_from, $this->date_to),
             new AttendanceSheet($this->name, $this->date_from, $this->date_to),
             new JobReportSheet($this->name, $this->date_from, $this->date_to),
         ];

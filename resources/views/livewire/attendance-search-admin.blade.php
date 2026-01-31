@@ -44,6 +44,48 @@
     @endif
     {{-- Confirmation Modal End --}}
 
+    {{-- Edit Role Modal (admin only) --}}
+    @if ($showEditRoleModal)
+        <div class="fixed inset-0 z-50 overflow-y-auto" style="background-color: rgba(0, 0, 0, 0.5);">
+            <div class="flex items-center justify-center min-h-screen px-4">
+                <div class="bg-white rounded-lg shadow-xl max-w-md w-full overflow-hidden transition-all">
+                    <div class="bg-indigo-50 px-6 py-4 border-b border-indigo-100">
+                        <h3 class="text-lg font-semibold text-indigo-900">Ubah Peran Pengguna</h3>
+                    </div>
+                    <div class="px-6 py-4">
+                        <p class="text-gray-700 mb-3">Pilih peran baru untuk pengguna <strong class="text-gray-900">{{ optional(\App\Models\User::find($editUserId))->name }}</strong></p>
+
+                        <label for="role" class="block mb-2 text-sm font-medium text-heading">Peran</label>
+                        <select wire:model="editUserRole" id="role"
+                            class="block w-full p-3 bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs">
+                            <option value="">-- Pilih Peran --</option>
+                            <option value="admin">Admin</option>
+                            <option value="employee">Employee</option>
+                        </select>
+                        @error('editUserRole') <p class="text-sm text-red-600 mt-2">{{ $message }}</p> @enderror
+
+                        @if (auth()->id() === $editUserId)
+                            <p class="text-sm text-yellow-700 mt-3">⚠️ Perubahan peran untuk akun Anda sendiri akan mengubah hak akses — Anda akan diminta untuk login ulang.</p>
+                        @else
+                            <p class="text-sm text-gray-600 mt-3">Pilih peran yang sesuai untuk pengguna ini.</p>
+                        @endif
+                    </div>
+                    <div class="bg-gray-50 px-6 py-4 flex gap-3 justify-end border-t">
+                        <button wire:click="cancelEditRole"
+                            class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-colors font-medium">
+                            Batal
+                        </button>
+                        <button wire:click="updateRole" wire:loading.attr="disabled"
+                            class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium">
+                            Simpan Perubahan
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+    {{-- Edit Role Modal End --}}
+
     <div class="container flex-col lg:flex lg:flex-wrap justify-center mb-5">
 
         {{-- Filter and Download --}}
@@ -55,7 +97,7 @@
                 <select wire:model.live="name" type="text" id="name"
                     class="block w-full xl:w-60 p-3 bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:focus:border-indigo-600 dark:focus:ring-indigo-600" />
                 <option value="">-- Pilih Nama --</option>
-                @foreach ($users as $user)
+                @foreach ($allUsers as $user)
                     <option value="{{ $user->name }}">{{ $user->name }}</option>
                 @endforeach
                 </select>
@@ -86,12 +128,12 @@
 
             {{-- Delete Filtered Button --}}
             @if ($name != '')
-            <div class="mb-4">
-                <button wire:click="confirmBulkDelete"
-                    class="block w-full xl:w-30 p-2.5 bg-red-600 duration-300 hover:bg-red-700 hover:cursor-pointer text-white font-semibold rounded-base focus:ring-brand focus:border-brand shadow-xs">
-                    Hapus Data!
-                </button>
-            </div>
+                <div class="mb-4">
+                    <button wire:click="confirmBulkDelete"
+                        class="block w-full xl:w-30 p-2.5 bg-red-600 duration-300 hover:bg-red-700 hover:cursor-pointer text-white font-semibold rounded-base focus:ring-brand focus:border-brand shadow-xs">
+                        Hapus Data!
+                    </button>
+                </div>
             @endif
             {{-- Delete Filtered Button End --}}
         </div>
@@ -102,13 +144,16 @@
     @if ($date_from != '' && $date_to != '')
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             {{-- Total Salary Card --}}
-            <div class="bg-linear-to-br from-green-50 to-green-100 border border-green-200 rounded-lg shadow-md hover:shadow-lg transition-shadow overflow-hidden">
+            <div
+                class="bg-linear-to-br from-green-50 to-green-100 border border-green-200 rounded-lg shadow-md hover:shadow-lg transition-shadow overflow-hidden">
                 <div class="p-6">
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-gray-700 font-semibold text-sm">Total Gaji</h3>
                         <div class="p-3 bg-green-200 rounded-lg">
                             <svg class="w-6 h-6 text-green-700" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+                                <path fill-rule="evenodd"
+                                    d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z"
+                                    clip-rule="evenodd" />
                             </svg>
                         </div>
                     </div>
@@ -118,13 +163,16 @@
             </div>
 
             {{-- Total Working Hours Card --}}
-            <div class="bg-linear-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg shadow-md hover:shadow-lg transition-shadow overflow-hidden">
+            <div
+                class="bg-linear-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg shadow-md hover:shadow-lg transition-shadow overflow-hidden">
                 <div class="p-6">
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-gray-700 font-semibold text-sm">Total Jam Kerja</h3>
                         <div class="p-3 bg-blue-200 rounded-lg">
                             <svg class="w-6 h-6 text-blue-700" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z" clip-rule="evenodd" />
+                                <path fill-rule="evenodd"
+                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z"
+                                    clip-rule="evenodd" />
                             </svg>
                         </div>
                     </div>
@@ -134,13 +182,16 @@
             </div>
 
             {{-- Late Attendance Card --}}
-            <div class="bg-linear-to-br from-red-50 to-red-100 border border-red-200 rounded-lg shadow-md hover:shadow-lg transition-shadow overflow-hidden">
+            <div
+                class="bg-linear-to-br from-red-50 to-red-100 border border-red-200 rounded-lg shadow-md hover:shadow-lg transition-shadow overflow-hidden">
                 <div class="p-6">
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-gray-700 font-semibold text-sm">Keterlambatan</h3>
                         <div class="p-3 bg-red-200 rounded-lg">
                             <svg class="w-6 h-6 text-red-700" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                                <path fill-rule="evenodd"
+                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                                    clip-rule="evenodd" />
                             </svg>
                         </div>
                     </div>
@@ -153,9 +204,12 @@
         <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
             <div class="flex items-center gap-3">
                 <svg class="w-5 h-5 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                    <path fill-rule="evenodd"
+                        d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                        clip-rule="evenodd" />
                 </svg>
-                <p class="text-yellow-800 text-sm">Silakan pilih tanggal awal dan akhir untuk melihat statistik filter data</p>
+                <p class="text-yellow-800 text-sm">Silakan pilih tanggal awal dan akhir untuk melihat statistik filter
+                    data</p>
             </div>
         </div>
     @endif
@@ -174,10 +228,95 @@
     @endif
     {{-- Message delete attendance End --}}
 
+    {{-- Tables All Datas --}}
+    <div class="mb-5">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-2xl font-semibold dark:text-white text-heading">Data Absensi & Laporan Kerja</h2>
+            <div class="flex gap-2 items-center">
+                <button wire:click="exportUsersSummary" wire:loading.attr="disabled"
+                    class="px-3 py-2 bg-gray-700 duration-300 hover:bg-gray-500 text-white font-semibold rounded-base shadow-xs text-sm">
+                    Download Ringkasan
+                </button>
+            </div>
+        </div>
+        <div class="relative overflow-x-auto bg-neutral-primary-soft shadow-xs rounded-base border border-default">
+            <table class="w-full text-sm text-left rtl:text-right text-body">
+                <thead class="bg-neutral-secondary-soft border-b border-default">
+                    <tr>
+                        <th scope="col" class="p-3 text-center font-bold whitespace-nowrap">
+                            NO
+                        </th>
+                        <th scope="col" class="p-3 text-center font-bold whitespace-nowrap">
+                            NAMA
+                        </th>
+                        <th scope="col" class="p-3 text-center font-bold whitespace-nowrap">
+                            KEHADIRAN
+                        </th>
+                        <th scope="col" class="p-3 text-center font-bold whitespace-nowrap">
+                            JAM KERJA
+                        </th>
+                        <th scope="col" class="p-3 text-center font-bold whitespace-nowrap">
+                            KETERLAMBATAN
+                        </th>
+                        <th scope="col" class="p-3 text-center font-bold whitespace-nowrap">
+                            GAJI
+                        </th>
+                        <th scope="col" class="p-3 text-center font-bold whitespace-nowrap">
+                            AKSI
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($users as $user)
+                    <tr class="odd:bg-neutral-primary even:bg-neutral-secondary-soft border-b border-default">
+                        <th scope="row" class="px-3 py-2 text-center font-medium text-heading whitespace-nowrap">
+                            {{ $loop->iteration }}
+                        </th>
+                        <th scope="row" class="px-3 py-2 text-center font-medium text-heading whitespace-nowrap">
+                            {{ $user->name }}
+                        </th>
+                        <th scope="row" class="px-3 py-2 text-center font-medium text-heading whitespace-nowrap">
+                            {{ $user->attendance_count ?? 0 }}
+                        </th>
+                        <th scope="row" class="px-3 py-2 text-center font-medium text-heading whitespace-nowrap">
+                            {{ $user->total_work_hours ?? 0 }} <span class="text-sm">jam</span>
+                        </th>
+                        <th scope="row" class="px-3 py-2 text-center font-medium text-heading whitespace-nowrap">
+                            {{ $user->total_late_minutes ?? 0 }} <span class="text-sm">kali</span>
+                        </th>
+                        <th scope="row" class="px-3 py-2 text-center font-medium text-heading whitespace-nowrap">
+                            Rp {{ number_format($user->salary ?? 0, 0, ',', '.') }}
+                        </th>
+
+                        <td class="px-3 py-2 text-center">
+                            @if (auth()->user()->role === 'admin' || auth()->id() === $user->id)
+                                <button
+                                    wire:click.prevent="confirmEditRole({{ $user->id }})"
+                                    class="px-2 py-1 bg-indigo-600 text-white text-xs rounded-base hover:bg-indigo-500 disabled:opacity-50">
+                                    Edit Role
+                                </button>
+                            @endif
+                        </td>
+                    </tr>
+                    @empty
+                    <tr class="odd:bg-neutral-primary even:bg-neutral-secondary-soft border-b border-default">
+                        <th scope="row" class="px-3 py-2 text-center font-medium text-heading whitespace-nowrap">
+                            Belum ada data.
+                        </th>
+                    </tr>
+                        
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
     {{-- Tables --}}
     <div class="xl:flex xl:justify-evenly gap-4">
         {{-- Reports Table --}}
-        <div class="relative mb-5 overflow-x-auto bg-neutral-primary-soft shadow-xs rounded-base border border-default">
+        <div
+            class="relative mb-5 overflow-x-auto bg-neutral-primary-soft shadow-xs rounded-base border border-default">
             <table class="w-full text-sm text-left rtl:text-center text-body">
                 <thead class="text-md text-body bg-gray-300 border-b border-default-medium">
                     <tr class="w-20">
@@ -220,19 +359,19 @@
                             <td class="px-3 py-2 font-medium text-heading whitespace-nowrap w-20">
 
                                 {{-- MODAL UPDATE REPORT --}}
-                                @if(auth()->user()->id === $report->user_id)
-                                <button
-                                    class="text-white bg-success box-border border border-transparent hover:bg-success-strong focus:ring-2 focus:ring-brand-medium shadow-xs font-medium leading-5 rounded-base text-sm px-2 py-2 focus:outline-none mr-1">
-                                    <a href="{{ route('edit-job-report', ['jobReport' => $report->id]) }}">
-                                        <svg class="w-4 h-4 text-white dark:text-white" aria-hidden="true"
-                                            xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                            fill="none" viewBox="0 0 24 24">
-                                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                                stroke-width="2"
-                                                d="m14.304 4.844 2.852 2.852M7 7H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-4.5m2.409-9.91a2.017 2.017 0 0 1 0 2.853l-6.844 6.844L8 14l.713-3.565 6.844-6.844a2.015 2.015 0 0 1 2.852 0Z" />
-                                        </svg>
-                                    </a>
-                                </button>
+                                @if (auth()->user()->id === $report->user_id)
+                                    <button
+                                        class="text-white bg-success box-border border border-transparent hover:bg-success-strong focus:ring-2 focus:ring-brand-medium shadow-xs font-medium leading-5 rounded-base text-sm px-2 py-2 focus:outline-none mr-1">
+                                        <a href="{{ route('edit-job-report', ['jobReport' => $report->id]) }}">
+                                            <svg class="w-4 h-4 text-white dark:text-white" aria-hidden="true"
+                                                xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                fill="none" viewBox="0 0 24 24">
+                                                <path stroke="currentColor" stroke-linecap="round"
+                                                    stroke-linejoin="round" stroke-width="2"
+                                                    d="m14.304 4.844 2.852 2.852M7 7H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-4.5m2.409-9.91a2.017 2.017 0 0 1 0 2.853l-6.844 6.844L8 14l.713-3.565 6.844-6.844a2.015 2.015 0 0 1 2.852 0Z" />
+                                            </svg>
+                                        </a>
+                                    </button>
                                 @endif
                                 {{-- MODAL UPDATE REPORT --}}
 
@@ -241,8 +380,8 @@
                                     class="text-white bg-danger box-border border border-transparent hover:bg-danger-strong focus:ring-2 focus:ring-brand-medium shadow-xs font-medium leading-5 rounded-base text-sm px-2 py-2 focus:outline-none"
                                     type="button">
                                     <svg class="w-4 h-4 text-white dark:text-white" aria-hidden="true"
-                                        xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
-                                        viewBox="0 0 24 24">
+                                        xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                        fill="none" viewBox="0 0 24 24">
                                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
                                             stroke-width="2"
                                             d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z" />
@@ -303,7 +442,8 @@
                 </thead>
                 <tbody>
                     @forelse ($attendances as $attendance)
-                        <tr wire:key="attendance-{{ $attendance->id }}" class="bg-neutral-primary-soft border-b border-default hover:bg-gray-200">
+                        <tr wire:key="attendance-{{ $attendance->id }}"
+                            class="bg-neutral-primary-soft border-b border-default hover:bg-gray-200">
                             <td scope="row" class="px-3 py-2 font-medium text-heading whitespace-nowrap">
                                 {{ $loop->iteration }}
                             </td>
@@ -337,8 +477,8 @@
                                         <svg class="w-4 h-4 text-white dark:text-white" aria-hidden="true"
                                             xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                             fill="none" viewBox="0 0 24 24">
-                                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                                stroke-width="2"
+                                            <path stroke="currentColor" stroke-linecap="round"
+                                                stroke-linejoin="round" stroke-width="2"
                                                 d="m14.304 4.844 2.852 2.852M7 7H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-4.5m2.409-9.91a2.017 2.017 0 0 1 0 2.853l-6.844 6.844L8 14l.713-3.565 6.844-6.844a2.015 2.015 0 0 1 2.852 0Z" />
                                         </svg>
                                     </a>
